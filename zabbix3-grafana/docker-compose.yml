@@ -1,0 +1,39 @@
+version: '2'
+services:
+  zabbix-db:
+    image: monitoringartist/zabbix-db-mariadb
+    volumes:
+      - zabbix-db-storage:/var/lib/mysql
+      - backups:/backups
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - MARIADB_USER=zabbix
+      - MARIADB_PASS=<password>
+  zabbix-server:
+    image: monitoringartist/zabbix-3.0-xxl
+    depends_on:
+      - zabbix-db
+    ports:
+      - "80:80"
+      - "10051:10051"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    links:
+      - zabbix-db:zabbix.db
+    environment:
+      - ZS_DBHost=zabbix.db
+      - ZS_DBUser=zabbix
+      - ZS_DBPassword=<password>
+  grafana:
+    image: monitoringartist/grafana-xxl
+    volumes:
+      - grafana-xxl-storage:/var/lib/grafana
+    ports:
+      - "3000:3000"
+volumes:
+  zabbix-db-storage:
+    driver: local
+  backups:
+    driver: local
+  grafana-xxl-storage:
+    driver: local
